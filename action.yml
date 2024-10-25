@@ -1,23 +1,24 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
-
-# Add your action's branding here. This will appear on the GitHub Marketplace.
+name: 'Romeo'
+author: 'ctfer-io'
+description: 'Deploy a Romeo environement from a GitHub Action'
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: 'pie-chart'
+  color: 'blue'
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  kubeconfig:
+    description: 'The kubeconfig to use for deploying a Romeo environment'
     required: true
-    default: '1000'
+  tag:
+    description: 'The Romeo tag to use'
+    required: true
+    default: 'latest'
 
-# Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  port:
+    description: 'The port to reach out the Romeo webserver'
+  claim-name:
+    description: 'The PersistentVolumeClaim name for binaries to mount in order to write coverage data'
 
 runs:
   using: node20
