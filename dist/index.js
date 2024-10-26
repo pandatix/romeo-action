@@ -112939,6 +112939,57 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 5104:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getStack = getStack;
+const automation_1 = __nccwpck_require__(7965);
+const upath = __importStar(__nccwpck_require__(4021));
+async function getStack() {
+    // Create our stack using a local program
+    // in the ../deploy directory
+    const args = {
+        stackName: 'romeo',
+        workDir: upath.joinSafe(__dirname, '..', 'deploy')
+    };
+    const opts = {
+        envVars: {
+            PULUMI_CONFIG_PASSPHRASE: ''
+        }
+    };
+    // create (or select if one already exists) a stack that uses our local program
+    return automation_1.LocalWorkspace.createOrSelectStack(args, opts);
+}
+
+
+/***/ }),
+
 /***/ 1730:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -112969,31 +113020,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7484));
-const automation_1 = __nccwpck_require__(7965);
-const upath = __importStar(__nccwpck_require__(4021));
 const stateHelper = __importStar(__nccwpck_require__(7155));
+const iac = __importStar(__nccwpck_require__(5104));
 async function run() {
     try {
-        // Create our stack using a local program
-        // in the ../deploy directory
-        const args = {
-            stackName: 'romeo',
-            workDir: upath.joinSafe(__dirname, '..', 'deploy')
-        };
-        // create (or select if one already exists) a stack that uses our local program
-        const stack = await automation_1.LocalWorkspace.createOrSelectStack(args);
-        console.info('successfully initialized stack');
-        console.info('setting up config');
+        const stack = await iac.getStack();
         await stack.setConfig('romeo:kubeconfig', {
             value: core.getInput('kubeconfig')
         });
-        console.info('config set');
-        console.info('deploying stack...');
+        console.info('Deploying Romeo...');
         const upRes = await stack.up({ onOutput: console.info });
-        console.log(`update summary: \n${JSON.stringify(upRes.summary.resourceChanges, null, 4)}`);
         core.setOutput('port', upRes.outputs.port.value);
         core.setOutput('claim-name', upRes.outputs.claimName.value);
-        core.info('Main action completed successfully.');
     }
     catch (error) {
         core.setFailed(`Action failed: ${error?.message ?? error}`);
@@ -113001,18 +113039,10 @@ async function run() {
 }
 async function cleanup() {
     try {
-        core.info('Running cleanup...');
-        // Create our stack using a local program
-        // in the ../deploy directory
-        const args = {
-            stackName: 'romeo',
-            workDir: upath.joinSafe(__dirname, '..', 'deploy')
-        };
-        // create (or select if one already exists) a stack that uses our local program
-        const stack = await automation_1.LocalWorkspace.createOrSelectStack(args);
-        const upRes = await stack.destroy({ onOutput: console.info });
+        const stack = await iac.getStack();
+        const upRes = await stack.destroy({ onOutput: console.info, remove: true });
         console.log(`update summary: \n${JSON.stringify(upRes.summary.resourceChanges, null, 4)}`);
-        core.info('Cleanup completed successfully.');
+        core.info('Romeo environment destroyed.');
     }
     catch (error) {
         core.warning(`Cleanup failed: ${error?.message ?? error}`);
