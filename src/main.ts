@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as stateHelper from './state-helper'
 
 async function run(): Promise<void> {
   try {
@@ -31,12 +32,11 @@ async function cleanup(): Promise<void> {
   }
 }
 
-async function main(): Promise<void> {
-  try {
-    await run()
-  } finally {
-    await cleanup()
-  }
+// Main
+if (!stateHelper.IsPost) {
+  run()
 }
-
-main().catch(error => core.setFailed((error as Error)?.message ?? error))
+// Post
+else {
+  cleanup()
+}
