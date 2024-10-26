@@ -9,9 +9,6 @@ on:
     - cron: '0 6 * * 5'
 
 permissions:
-  contents: read
-
-permissions:
   actions: read
   checks: write
   contents: read
@@ -30,16 +27,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+        uses: https://github.com/actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@f779452ac5af1c261dce0346a8f964149f49322b # v3.26.13
+        uses: https://github.com/github/codeql-action/init@f779452ac5af1c261dce0346a8f964149f49322b # v3.26.13
         with:
           languages: ${{ matrix.language }}
           source-root: src
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@f779452ac5af1c261dce0346a8f964149f49322b # v3.26.13
+        uses: https://github.com/github/codeql-action/autobuild@f779452ac5af1c261dce0346a8f964149f49322b # v3.26.13
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@f779452ac5af1c261dce0346a8f964149f49322b # v3.26.13
+        uses: https://github.com/github/codeql-action/analyze@f779452ac5af1c261dce0346a8f964149f49322b # v3.26.13
