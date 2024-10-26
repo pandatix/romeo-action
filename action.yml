@@ -18,7 +18,9 @@ outputs:
   port:
     description: 'The port to reach out the Romeo webserver'
   claim-name:
-    description: 'The PersistentVolumeClaim name for binaries to mount in order to write coverage data'
+    description:
+      'The PersistentVolumeClaim name for binaries to mount in order to write
+      coverage data'
 
 runs:
   using: node20
