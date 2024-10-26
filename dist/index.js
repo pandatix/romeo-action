@@ -112984,7 +112984,9 @@ async function run() {
         const stack = await automation_1.LocalWorkspace.createOrSelectStack(args);
         console.info('successfully initialized stack');
         console.info('setting up config');
-        await stack.setConfig('kubeconfig', { value: core.getInput('kubeconfig') });
+        await stack.setConfig('romeo:kubeconfig', {
+            value: core.getInput('kubeconfig')
+        });
         console.info('config set');
         console.info('deploying stack...');
         const upRes = await stack.up({ onOutput: console.info });

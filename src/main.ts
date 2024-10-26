@@ -17,7 +17,9 @@ async function run(): Promise<void> {
 
     console.info('successfully initialized stack')
     console.info('setting up config')
-    await stack.setConfig('kubeconfig', { value: core.getInput('kubeconfig') })
+    await stack.setConfig('romeo:kubeconfig', {
+      value: core.getInput('kubeconfig')
+    })
     console.info('config set')
 
     console.info('deploying stack...')
