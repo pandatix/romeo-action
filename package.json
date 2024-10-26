@@ -35,7 +35,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@actions/core": "^1.11.1"
+    "@actions/core": "^1.11.1",
+    "@pulumi/pulumi": "^3.137.0"
   },
   "devDependencies": {
     "@github/local-action": "^2.1.2",
