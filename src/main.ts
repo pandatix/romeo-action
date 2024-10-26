@@ -1,7 +1,10 @@
 import * as core from '@actions/core'
 import { LocalProgramArgs, LocalWorkspace } from '@pulumi/pulumi/automation'
 import * as upath from 'upath'
+import * as fs from 'fs'
 import * as stateHelper from './state-helper'
+
+const stateFile = 'romeo.state.json'
 
 async function run(): Promise<void> {
   try {
@@ -30,9 +33,14 @@ async function run(): Promise<void> {
 
     const dep = await stack.exportStack()
     console.log(`stack: \n${JSON.stringify(dep.deployment)}`)
+    fs.writeFile(stateFile, JSON.stringify(dep.deployment), err => {
+      if (err) {
+        throw err
+      }
+    })
 
-    core.setOutput('port', upRes.outputs.port)
-    core.setOutput('claim-name', upRes.outputs.claimName)
+    core.setOutput('port', upRes.outputs.port.value)
+    core.setOutput('claim-name', upRes.outputs.claimName.value)
 
     core.info('Main action completed successfully.')
   } catch (error) {
@@ -43,6 +51,13 @@ async function run(): Promise<void> {
 async function cleanup(): Promise<void> {
   try {
     core.info('Running cleanup...')
+
+    fs.readFile(stateFile, (err, data) => {
+      if (err) {
+        throw err
+      }
+      console.log(data)
+    })
 
     // Your cleanup code goes here
     // e.g., deleting temporary files, closing open connections, etc.

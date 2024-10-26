@@ -112971,7 +112971,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7484));
 const automation_1 = __nccwpck_require__(7965);
 const upath = __importStar(__nccwpck_require__(4021));
+const fs = __importStar(__nccwpck_require__(9896));
 const stateHelper = __importStar(__nccwpck_require__(7155));
+const stateFile = 'romeo.state.json';
 async function run() {
     try {
         // Create our stack using a local program
@@ -112993,8 +112995,13 @@ async function run() {
         console.log(`update summary: \n${JSON.stringify(upRes.summary.resourceChanges, null, 4)}`);
         const dep = await stack.exportStack();
         console.log(`stack: \n${JSON.stringify(dep.deployment)}`);
-        core.setOutput('port', upRes.outputs.port);
-        core.setOutput('claim-name', upRes.outputs.claimName);
+        fs.writeFile(stateFile, JSON.stringify(dep.deployment), err => {
+            if (err) {
+                throw err;
+            }
+        });
+        core.setOutput('port', upRes.outputs.port.value);
+        core.setOutput('claim-name', upRes.outputs.claimName.value);
         core.info('Main action completed successfully.');
     }
     catch (error) {
@@ -113004,6 +113011,12 @@ async function run() {
 async function cleanup() {
     try {
         core.info('Running cleanup...');
+        fs.readFile(stateFile, (err, data) => {
+            if (err) {
+                throw err;
+            }
+            console.log(data);
+        });
         // Your cleanup code goes here
         // e.g., deleting temporary files, closing open connections, etc.
         await new Promise(resolve => setTimeout(resolve, 500));
