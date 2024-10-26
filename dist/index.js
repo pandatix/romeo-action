@@ -112971,9 +112971,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7484));
 const automation_1 = __nccwpck_require__(7965);
 const upath = __importStar(__nccwpck_require__(4021));
-const fs = __importStar(__nccwpck_require__(9896));
 const stateHelper = __importStar(__nccwpck_require__(7155));
-const stateFile = 'romeo.state.json';
 async function run() {
     try {
         // Create our stack using a local program
@@ -112993,13 +112991,6 @@ async function run() {
         console.info('deploying stack...');
         const upRes = await stack.up({ onOutput: console.info });
         console.log(`update summary: \n${JSON.stringify(upRes.summary.resourceChanges, null, 4)}`);
-        const dep = await stack.exportStack();
-        console.log(`stack: \n${JSON.stringify(dep.deployment)}`);
-        fs.writeFile(stateFile, JSON.stringify(dep.deployment), err => {
-            if (err) {
-                throw err;
-            }
-        });
         core.setOutput('port', upRes.outputs.port.value);
         core.setOutput('claim-name', upRes.outputs.claimName.value);
         core.info('Main action completed successfully.');
@@ -113011,15 +113002,16 @@ async function run() {
 async function cleanup() {
     try {
         core.info('Running cleanup...');
-        fs.readFile(stateFile, (err, data) => {
-            if (err) {
-                throw err;
-            }
-            console.log(data);
-        });
-        // Your cleanup code goes here
-        // e.g., deleting temporary files, closing open connections, etc.
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Create our stack using a local program
+        // in the ../deploy directory
+        const args = {
+            stackName: 'romeo',
+            workDir: upath.joinSafe(__dirname, '..', 'deploy')
+        };
+        // create (or select if one already exists) a stack that uses our local program
+        const stack = await automation_1.LocalWorkspace.createOrSelectStack(args);
+        const upRes = await stack.destroy({ onOutput: console.info });
+        console.log(`update summary: \n${JSON.stringify(upRes.summary.resourceChanges, null, 4)}`);
         core.info('Cleanup completed successfully.');
     }
     catch (error) {
@@ -113073,6 +113065,11 @@ const core = __importStar(__nccwpck_require__(7484));
  * Indicates whether the POST action is running
  */
 exports.IsPost = !!core.getState('isPost');
+// Publish a variable so that when the POST action runs, it can determine it should run the cleanup logic.
+// This is necessary since we don't have a separate entry point.
+if (!exports.IsPost) {
+    core.saveState('isPost', 'true');
+}
 
 
 /***/ }),

@@ -1,10 +1,7 @@
 import * as core from '@actions/core'
 import { LocalProgramArgs, LocalWorkspace } from '@pulumi/pulumi/automation'
 import * as upath from 'upath'
-import * as fs from 'fs'
 import * as stateHelper from './state-helper'
-
-const stateFile = 'romeo.state.json'
 
 async function run(): Promise<void> {
   try {
@@ -31,14 +28,6 @@ async function run(): Promise<void> {
       `update summary: \n${JSON.stringify(upRes.summary.resourceChanges, null, 4)}`
     )
 
-    const dep = await stack.exportStack()
-    console.log(`stack: \n${JSON.stringify(dep.deployment)}`)
-    fs.writeFile(stateFile, JSON.stringify(dep.deployment), err => {
-      if (err) {
-        throw err
-      }
-    })
-
     core.setOutput('port', upRes.outputs.port.value)
     core.setOutput('claim-name', upRes.outputs.claimName.value)
 
@@ -52,16 +41,20 @@ async function cleanup(): Promise<void> {
   try {
     core.info('Running cleanup...')
 
-    fs.readFile(stateFile, (err, data) => {
-      if (err) {
-        throw err
-      }
-      console.log(data)
-    })
+    // Create our stack using a local program
+    // in the ../deploy directory
+    const args: LocalProgramArgs = {
+      stackName: 'romeo',
+      workDir: upath.joinSafe(__dirname, '..', 'deploy')
+    }
 
-    // Your cleanup code goes here
-    // e.g., deleting temporary files, closing open connections, etc.
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // create (or select if one already exists) a stack that uses our local program
+    const stack = await LocalWorkspace.createOrSelectStack(args)
+
+    const upRes = await stack.destroy({ onOutput: console.info })
+    console.log(
+      `update summary: \n${JSON.stringify(upRes.summary.resourceChanges, null, 4)}`
+    )
 
     core.info('Cleanup completed successfully.')
   } catch (error) {
