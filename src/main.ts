@@ -1,27 +1,42 @@
 import * as core from '@actions/core'
-import * as stateHelper from './state-helper'
 
-export function run(): void {
+async function run(): Promise<void> {
   try {
-    console.log('SHANFLAG run SHANFLAG')
-  } catch {
-    core.setFailed('failed')
+    core.info('Running the main action...')
+
+    // Your main action code goes here
+    const input = core.getInput('example_input')
+    core.info(`Example input: ${input}`)
+
+    // Simulate some work
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    core.info('Main action completed successfully.')
+  } catch (error) {
+    core.setFailed(`Action failed: ${(error as Error)?.message ?? error}`)
   }
 }
 
-export function cleanup(): void {
+async function cleanup(): Promise<void> {
   try {
-    console.log('SHANFLAG cleanup SHANFLAG')
-  } catch {
-    core.setFailed('failed')
+    core.info('Running cleanup...')
+
+    // Your cleanup code goes here
+    // e.g., deleting temporary files, closing open connections, etc.
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    core.info('Cleanup completed successfully.')
+  } catch (error) {
+    core.warning(`Cleanup failed: ${(error as Error)?.message ?? error}`)
   }
 }
 
-// Main
-if (!stateHelper.IsPost) {
-  run()
+async function main(): Promise<void> {
+  try {
+    await run()
+  } finally {
+    await cleanup()
+  }
 }
-// Post
-else {
-  cleanup()
-}
+
+main().catch(error => core.setFailed((error as Error)?.message ?? error))
